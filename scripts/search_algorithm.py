@@ -234,46 +234,69 @@ def floodfill(iter =1):
     # state_rep = {target: 0}
     # get matrix with values
     matrix = gen(dim, target)
-    print matrix
+    print(matrix)
     action_list = list()
     visited = list()
     while iter >= 0:
-        x_i = int(current["x"] * 2)
-        y_i = int(current["y"] * 2)
-        val_i = matrix[x_i][y_i]
-        while not ((current["x"],current["y"]) == (target["x"],target["y"])):
-            print("CURR", int(current["x"]*2), int(current["y"]*2))
-            print("TARGET", int(target["x"]*2), int(target["y"]*2))
-            if current not in visited:
-                visited.append(current)
-                # get next states
-                # assumes only valid
-                _, next_states = flood_orientation(current)
-                a_dict = {}
-                for state in next_states:
-                    next_state, cost = state["state"], state["cost"]
-                    if cost < 0:
-                        continue
-                    x = int(next_state["x"]*2)
-                    y = int(next_state["y"]*2)
-                    cost = matrix[x][y]
-                    print("COST:", cost)
-                    action = str(state["action"])
-                    a_dict[action] = cost
 
-                print(a_dict)
-                next_move = min(a_dict.keys(), key=(lambda k: a_dict[k]))
-                if a_dict[next_move] > val_i:
-                    matrix[x_i][y_i] = a_dict[next_move] + 1
-                if iter-1 < 0:
-                    action_list.append(next_move)
-                for i in next_states:
-                    if i["action"] == next_move:
-                        current = i["state"]
+        while True:
+            if (current["x"], current["y"]) == (target["x"], target["y"]):
                         break
+            x_i = int(current["x"] * 2)
+            y_i = int(current["y"] * 2)
+            val_i = matrix[x_i][y_i]
+            # get next states
+            # assumes only valid
+            dead_end, next_states = flood_orientation(current)
+            # if you have reached a dead end, update cost and go back to start
+            if dead_end:
+                while dead_end:
+                    matrix[x_i][y_i] = 100000000 # dont make a maze where this value doesnt work
+                    if (x_i, y_i) == (0, 0):
+                        print("Invalid State: this maze starts in a dead end!")
+                        exit()
+                    else:
+                        ori = current["orientation"]
+                        if ori == "NORTH":
+                            new_ori = "SOUTH"
+                        elif ori == "EAST":
+                            new_ori = "WEST"
+                        elif ori == "WEST":
+                            new_ori = "EAST"
+                        else:
+                            new_ori = "NORTH"
+
+                        current["orientation"] = new_ori
+                        print("CURRENT", current)
+                        dead_end, next_states = flood_orientation(current)
+            print("Next_STATES", next_states)
+            a_dict = {}
+            for state in next_states:
+                next_state, cost = state["state"], state["cost"]
+                if cost < 0:
+                    continue
+                x = int(next_state["x"]*2)
+                y = int(next_state["y"]*2)
+                val = matrix[x][y]
+                print("COST:", val)
+                action = str(state["action"])
+                a_dict[action] = (val, state["action"])
+            next_move = min(a_dict.keys(), key=(lambda k: a_dict[k][0]))
+            print("NEXT_MV", next_move)
+            if a_dict[next_move][0] > val_i:
+                matrix[x_i][y_i] = a_dict[next_move][0] + 1
+            nxt = a_dict[next_move][1]
+            print("NXT", nxt)
+            if iter - 1 < 0:
+                action_list.extend(nxt)
+            for i in next_states:
+                if i["action"] == nxt :
+                    current = i["state"]
+                    break
         # Now run with updated values
+
+
         current = helper.current_state
-        visited.clear()
         iter -= 1
     return action_list
 
@@ -299,13 +322,15 @@ def flood_manhattan(x, x1, y, y1):
 def flood_orientation(current_state, exclude=[], ismove=False, is_compl=True):
     helper = robot_action_server
     isDeadEnd = True
+    s =current_state
     valid_state_list = []
-    s = current_state
     for item in helper.get_successors(current_state):
+        print("ITEM1", item)
         x, y = item["state"]["x"], item["state"]["y"]
-        if item["action"] == "MoveF" and (x, y) not in exclude:
+        if item["cost"] >= 0 and item["action"] == "MoveF" and (x, y) not in exclude:
             isDeadEnd = False
             if is_compl:
+                item["action"] = ["MoveF"]
                 valid_state_list.append(item)
             else:
                 valid_state_list.append(item["state"])
@@ -330,10 +355,12 @@ def flood_orientation(current_state, exclude=[], ismove=False, is_compl=True):
 
         state["orientation"] = ori_cw
         for item in helper.get_successors(state):
+            print("ITEM2", item)
             x, y = item["state"]["x"], item["state"]["y"]
-            if  item["action"] == "MoveF" and (x, y) not in exclude:
+            if item["cost"] >= 0 and item["action"] == "MoveF" and (x, y) not in exclude:
                 isDeadEnd = False
                 if is_compl:
+                    item["action"] = ["TurnCW", "MoveF"]
                     valid_state_list.append(item)
                 else:
                     valid_state_list.append(item["state"])
@@ -341,10 +368,12 @@ def flood_orientation(current_state, exclude=[], ismove=False, is_compl=True):
         state = copy.deepcopy(state)
         state["orientation"] = ori_ccw
         for item in helper.get_successors(state):
+            print("ITEM3", item)
             x, y = item["state"]["x"], item["state"]["y"]
-            if item["action"] == "MoveF" and (x, y) not in exclude:
+            if item["cost"] >= 0 and item["action"] == "MoveF" and (x, y) not in exclude:
                 isDeadEnd = False
                 if is_compl:
+                    item["action"] = ["TurnCCW", "MoveF"]
                     valid_state_list.append(item)
                 else:
                     valid_state_list.append(item["state"])
