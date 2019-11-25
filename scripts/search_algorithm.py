@@ -235,7 +235,6 @@ def floodfill(iter =1):
     # state_rep = {target: 0}
     # get matrix with values
     matrix = gen(dim, target)
-<<<<<<< HEAD
     print(matrix)
     action_list = list()
     visited = list()
@@ -243,45 +242,7 @@ def floodfill(iter =1):
 
         while True:
             if (current["x"], current["y"]) == (target["x"], target["y"]):
-=======
-   #print matrix
-    action_list = list()
-    visited = list()
-    while iter >= 0:
-        x_i = int(current["x"] * 2)
-        y_i = int(current["y"] * 2)
-        val_i = matrix[x_i][y_i]
-        while not ((current["x"],current["y"]) == (target["x"],target["y"])):
-            #print("CURR", int(current["x"]*2), int(current["y"]*2))
-            #print("TARGET", int(target["x"]*2), int(target["y"]*2))
-            if current not in visited:
-                visited.append(current)
-                # get next states
-                # assumes only valid
-                _, next_states = flood_orientation(current)
-                a_dict = {}
-                for state in next_states:
-                    next_state, cost = state["state"], state["cost"]
-                    if cost < 0:
-                        continue
-                    x = int(next_state["x"]*2)
-                    y = int(next_state["y"]*2)
-                    cost = matrix[x][y]
-                    #print("COST:", cost)
-                    action = str(state["action"])
-                    a_dict[action] = cost
-
-                #print(a_dict)
-                next_move = min(a_dict.keys(), key=(lambda k: a_dict[k]))
-                if a_dict[next_move] > val_i:
-                    matrix[x_i][y_i] = a_dict[next_move] + 1
-                if iter-1 < 0:
-                    action_list.append(next_move)
-                for i in next_states:
-                    if i["action"] == next_move:
-                        current = i["state"]
->>>>>>> dd96efad9985471178cdf5276c9d9c0446e04c9f
-                        break
+                break
             x_i = int(current["x"] * 2)
             y_i = int(current["y"] * 2)
             val_i = matrix[x_i][y_i]
@@ -334,8 +295,6 @@ def floodfill(iter =1):
                     current = i["state"]
                     break
         # Now run with updated values
-
-
         current = helper.current_state
         iter -= 1
     return action_list
@@ -431,9 +390,9 @@ def leftHand(use_custom_heuristic):
     action_list = []
 
     while (not (currState["x"], currState["y"]) == (goal_state["x"], goal_state["y"])):
-    	flag1 = True
-    	flag2 = True
-    	flag3 = True
+        flag1 = True
+        flag2 = True
+        flag3 = True
 
         for item in helper.get_successors(currState):
             if item["action"] == "TurnCCW" and item["cost"] >= 0:
@@ -450,21 +409,21 @@ def leftHand(use_custom_heuristic):
                         break
                 break
         
-	    if (flag1 == False):
-	        #print(flag1)
-	        continue
-		
+        if (flag1 == False):
+            #print(flag1)
+            continue
+
         for item in helper.get_successors(currState):
-	        if (item["action"] == "MoveF" and item["cost"] >= 0):
-	            currState = item["state"]
-	            action_list.append("MoveF")
-	            #print action_list
-	            flag2 = False
-	            #continue
-	            break
+            if (item["action"] == "MoveF" and item["cost"] >= 0):
+                currState = item["state"]
+                action_list.append("MoveF")
+                #print action_list
+                flag2 = False
+                #continue
+                break
 
         if (flag2 == False):
-        	continue
+            continue
 
         for item in helper.get_successors(currState):
             if (item["action"] == "TurnCW"):
@@ -474,7 +433,7 @@ def leftHand(use_custom_heuristic):
                 flag3 = False
                 break
         if (flag3 == False):
-        	continue
+            continue
     
     return action_list
 
