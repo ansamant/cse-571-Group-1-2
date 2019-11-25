@@ -33,7 +33,7 @@ root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pard
 mazeInfo = Maze(6, 0.5)
 # books = mazeInfo.generate_blocked_edges(1, 32,  1, root_path)
 mazeInfoCopy = copy.deepcopy(mazeInfo)
-print "blocked_edges: ", mazeInfo.blocked_edges
+#print "blocked_edges: ", mazeInfo.blocked_edges
 robot_action_server = RobotActionsServer({}, root_path, 32)
 def manhattan_distance(state1, state2):
     return abs(state1[0]-state2.x) + abs(state1[1]-state2.y)
@@ -115,8 +115,8 @@ def is_dead_end(current_state, exclude = [], ismove = False, is_compl = False):
                 else:
                     valid_state_list.append(item["state"])
                 
-    if isDeadEnd:
-        print("current state ", current_state, " isDeadEnd ", isDeadEnd, " valid_state_list ", valid_state_list)
+    #if isDeadEnd:
+        #print("current state ", current_state, " isDeadEnd ", isDeadEnd, " valid_state_list ", valid_state_list)
     return isDeadEnd, valid_state_list
 
 def find_dead_ends(current_state, visited):
@@ -133,7 +133,7 @@ def find_dead_ends(current_state, visited):
     return list
 
 def fill_dead_end(state, maze, exclude):
-    print "filling dead end for state ", state
+    #print "filling dead end for state ", state
     x1, y1 = int(state["x"] * 2), int(state["y"] * 2)
     _, valid_state_list = is_dead_end(state)
     while len(valid_state_list) == 1:
@@ -144,16 +144,16 @@ def fill_dead_end(state, maze, exclude):
             x1, y1 = int(s["x"] * 2), int(s["y"] * 2)
             _, valid_state_list = is_dead_end(s, exclude)
         else:
-            print " rotating at ", s
+            #print " rotating at ", s
             _, valid_state_list = is_dead_end(s, exclude, True)
-        print "next state", s, " valid state len ", len(valid_state_list)
+        #print "next state", s, " valid state len ", len(valid_state_list)
     
 def walkthrough_maze(state, maze):
     helper = robot_action_server
     goal_state = helper.terminal_state
     actions = []
     visited = set()
-    print "goal state ", goal_state
+    #print "goal state ", goal_state
     while((state["x"],state["y"]) != (goal_state["x"],goal_state["y"])):
         _,paths = is_dead_end(state, [], False, True)
         #print "init paths ", paths
@@ -166,21 +166,21 @@ def walkthrough_maze(state, maze):
             elif (x,y) in visited:
                 paths.remove(item)
             visited.add((x,y))
-        if len(paths) != 1:
-            print "State ", state," has ", len(paths), " paths"
+        #if len(paths) != 1:
+            #print "State ", state," has ", len(paths), " paths"
         s = paths[0]
-        print " chosen ", s
+        #print " chosen ", s
         actions.extend(s["action"])
         state = s["state"]
 
-    print "mostly reached goal state ", state
+    #print "mostly reached goal state ", state
     return actions
 
 def dead_end_filling(use_custom_heuristic):
     helper = robot_action_server
     init_state = helper.current_state
     goal_state = helper.terminal_state
-    print"\n\n\n-----goal state", goal_state
+    #print"\n\n\n-----goal state", goal_state
     dim = helper.maze_dim
     #possible_actions = helper.get_actions() 
     action_list = []
@@ -190,10 +190,10 @@ def dead_end_filling(use_custom_heuristic):
     dead_ends = find_dead_ends(init_state, visited)
     for i in dead_ends:
         if (i["x"],i["y"]) == (init_state["x"], init_state["y"]) or (i["x"],i["y"]) == (goal_state["x"], goal_state["y"]):
-            print "removing ", i
+            #print "removing ", i
             dead_ends.remove(i)
-    print("dead_ends")
-    print dead_ends
+    #print("dead_ends")
+    #print dead_ends
     maze = [[0 for i in range(dim[1])] for j in range(dim[0])]
     exclude = []
     for state in dead_ends:
@@ -210,12 +210,13 @@ def dead_end_filling(use_custom_heuristic):
         state["orientation"] = new_ori
         fill_dead_end(state, maze, exclude)
         
-    print("dead end filled")
+    #print("dead end filled")
+    '''
     for row in maze:
         print row
-        
+    '''    
     action_list = walkthrough_maze(init_state, maze)
-    print "action list ", action_list
+    #print "action list ", action_list
     return action_list
     
 '''
@@ -234,7 +235,7 @@ def floodfill(iter =1):
     # state_rep = {target: 0}
     # get matrix with values
     matrix = gen(dim, target)
-    print matrix
+   #print matrix
     action_list = list()
     visited = list()
     while iter >= 0:
@@ -242,8 +243,8 @@ def floodfill(iter =1):
         y_i = int(current["y"] * 2)
         val_i = matrix[x_i][y_i]
         while not ((current["x"],current["y"]) == (target["x"],target["y"])):
-            print("CURR", int(current["x"]*2), int(current["y"]*2))
-            print("TARGET", int(target["x"]*2), int(target["y"]*2))
+            #print("CURR", int(current["x"]*2), int(current["y"]*2))
+            #print("TARGET", int(target["x"]*2), int(target["y"]*2))
             if current not in visited:
                 visited.append(current)
                 # get next states
@@ -257,11 +258,11 @@ def floodfill(iter =1):
                     x = int(next_state["x"]*2)
                     y = int(next_state["y"]*2)
                     cost = matrix[x][y]
-                    print("COST:", cost)
+                    #print("COST:", cost)
                     action = str(state["action"])
                     a_dict[action] = cost
 
-                print(a_dict)
+                #print(a_dict)
                 next_move = min(a_dict.keys(), key=(lambda k: a_dict[k]))
                 if a_dict[next_move] > val_i:
                     matrix[x_i][y_i] = a_dict[next_move] + 1
@@ -349,8 +350,8 @@ def flood_orientation(current_state, exclude=[], ismove=False, is_compl=True):
                 else:
                     valid_state_list.append(item["state"])
 
-    if isDeadEnd:
-        print("current state ", current_state, " isDeadEnd ", isDeadEnd, " valid_state_list ", valid_state_list)
+    #if isDeadEnd:
+        #print("current state ", current_state, " isDeadEnd ", isDeadEnd, " valid_state_list ", valid_state_list)
     return isDeadEnd, valid_state_list
 
 
@@ -362,9 +363,11 @@ def leftHand(use_custom_heuristic):
     action_list = []
 
     while (not (currState["x"], currState["y"]) == (goal_state["x"], goal_state["y"])):
+    	flag1 = True
+    	flag2 = True
+    	flag3 = True
 
         for item in helper.get_successors(currState):
-            flag = True
             if item["action"] == "TurnCCW" and item["cost"] >= 0:
                 leftState = item["state"]
                 subItems = helper.get_successors(leftState)
@@ -374,22 +377,37 @@ def leftHand(use_custom_heuristic):
                         currState = next["state"]
                         action_list.append("TurnCCW")
                         action_list.append("MoveF")
-                        flag = False
+                        #print action_list
+                        flag1 = False
                         break
+                break
+        
+	    if (flag1 == False):
+	        #print(flag1)
+	        continue
+		
+        for item in helper.get_successors(currState):
+	        if (item["action"] == "MoveF" and item["cost"] >= 0):
+	            currState = item["state"]
+	            action_list.append("MoveF")
+	            #print action_list
+	            flag2 = False
+	            #continue
+	            break
 
-                if (flag == False):
-                    continue
+        if (flag2 == False):
+        	continue
 
-            if (item["action"] == "MoveF" and item["cost"] >= 0):
+        for item in helper.get_successors(currState):
+            if (item["action"] == "TurnCW"):
                 currState = item["state"]
-                action_list.append("MoveF")
-                continue
-
-            for item2 in helper.get_successors(currState):
-                if (item2["action"] == "TurnCW"):
-                    currState = item2["state"]
-                    action_list.append("TurnCW")
-
+                action_list.append("TurnCW")
+                #print action_list
+                flag3 = False
+                break
+        if (flag3 == False):
+        	continue
+    
     return action_list
 
 def exec_action_list(action_list):
